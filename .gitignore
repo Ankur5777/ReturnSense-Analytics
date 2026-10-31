@@ -1,0 +1,27 @@
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.swp
+
+# Virtual Environments
+venv/
+env/
+ENV/
+.env
+
+# Django Local Database & Logs
+*.sqlite3
+db.sqlite3
+*.log
+
+# Static build outputs (collected files)
+staticfiles/
+
+# Large Datasets (GitHub enforces a 100MB limit)
+*.csv
+*.xlsx
+
+# OS generated files
+.DS_Store
+Thumbs.db

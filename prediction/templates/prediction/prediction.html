@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReturnPulse AI | Order Return Inference Engine</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #0b0f19;
+            --bg-surface: rgba(18, 24, 38, 0.75);
+            --primary-accent: #6366f1;
+            --secondary-accent: #06b6d4;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --text-heading: #f8fafc;
+            --text-body: #94a3b8;
+            --text-light: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-body);
+            min-height: 100vh;
+        }
+
+        .ambient-glow {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
+            filter: blur(90px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .navbar-custom {
+            background: rgba(11, 15, 25, 0.8) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .glass-card {
+            background: var(--bg-surface);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: 32px;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        .form-control, .form-select {
+            background-color: rgba(11, 15, 25, 0.7) !important;
+            border: 1px solid var(--border-subtle) !important;
+            color: #f1f5f9 !important;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-accent) !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+        }
+
+        .form-select option {
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, var(--primary-accent), #4338ca);
+            border: none;
+            color: #ffffff;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 14px 28px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px -4px rgba(99, 102, 241, 0.5);
+            color: #fff;
+        }
+
+        .result-box {
+            border-radius: 18px;
+            padding: 24px;
+            border: 1px solid;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .result-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .result-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-glow"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-light" href="{% url 'home' %}">
+                <span class="d-inline-flex align-items-center justify-content-center bg-primary rounded-3 text-white p-2" style="width: 36px; height: 36px;">
+                    <i class="fa-solid fa-cube fs-6"></i>
+                </span>
+                ReturnPulse<span class="text-info">.ai</span>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'home' %}" class="btn btn-sm btn-outline-light px-3" style="border-radius: 10px;">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Home
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn btn-sm btn-secondary px-3" style="background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.3); color: #22d3ee; border-radius: 10px;">
+                    <i class="fa-solid fa-chart-line me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="container pt-4 pb-3">
+        <div class="border-bottom pb-4" style="border-color: var(--border-subtle) !important;">
+            <span class="badge border border-primary text-info mb-2 px-3 py-1" style="background: rgba(99, 102, 241, 0.1);">
+                Inference API
+            </span>
+            <h2 class="fw-bold text-light m-0">Customer Return Prediction Engine</h2>
+            <p class=" small m-0 mt-1" style="color: #b8c2d1">Submit order attributes to infer product return probability and identify fit/operational risk.</p>
+        </div>
+    </header>
+
+    <main class="container my-4" style="position: relative; z-index: 2;">
+        <div class="row g-4">
+            
+            <!-- Left Form Column -->
+            <div class="col-lg-8">
+                <div class="glass-card">
+                    <h5 class="fw-bold text-light mb-4">
+                        <i class="fa-solid fa-sliders text-primary me-2"></i>Order & Transaction Parameters
+                    </h5>
+
+                    <form method="POST" action="{% url 'predict' %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+
+                            <!-- Price -->
+                            <div class="col-md-4">
+                                <label class="form-label">Price (€)</label>
+                                <input type="number" step="0.01" class="form-control" name="price" value="{{ result.inputs.price|default:'69.90' }}" required>
+                            </div>
+
+                            <!-- Manufacturer ID -->
+                            <div class="col-md-4">
+                                <label class="form-label">Manufacturer ID</label>
+                                <input type="number" class="form-control" name="manufacturerID" value="{{ result.inputs.manufacturerID|default:'20' }}" required>
+                            </div>
+
+                            <!-- Delivery Duration -->
+                            <div class="col-md-4">
+                                <label class="form-label">Delivery Duration (Days)</label>
+                                <input type="number" class="form-control" name="delivery_duration" value="{{ result.inputs.delivery_duration|default:'5' }}" required>
+                            </div>
+
+                            <!-- Customer Age -->
+                            <div class="col-md-4">
+                                <label class="form-label">Customer Age</label>
+                                <input type="number" class="form-control" name="customer_age" value="{{ result.inputs.customer_age|default:'34' }}" required>
+                            </div>
+
+                            <!-- Account Age (Days) -->
+                            <div class="col-md-4">
+                                <label class="form-label">Account Age (Days)</label>
+                                <input type="number" class="form-control" name="account_age_days" value="{{ result.inputs.account_age_days|default:'180' }}" required>
+                            </div>
+
+                            <!-- Order Month -->
+                            <div class="col-md-4">
+                                <label class="form-label">Order Month</label>
+                                <select class="form-select" name="order_month">
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6" selected>June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+                            </div>
+
+                            <!-- Salutation -->
+                            <div class="col-md-4">
+                                <label class="form-label">Customer Salutation</label>
+                                <select class="form-select" name="salutation">
+                                    <option value="Mrs" selected>Mrs</option>
+                                    <option value="Mr">Mr</option>
+                                    <option value="Family">Family</option>
+                                    <option value="Company">Company</option>
+                                </select>
+                            </div>
+
+                            <!-- State -->
+                            <div class="col-md-4">
+                                <label class="form-label">Customer State</label>
+                                <select class="form-select" name="state">
+                                    <option value="Bavaria" selected>Bavaria</option>
+                                    <option value="Berlin">Berlin</option>
+                                    <option value="North Rhine-Westphalia">North Rhine-Westphalia</option>
+                                    <option value="Baden-Wuerttemberg">Baden-Wuerttemberg</option>
+                                    <option value="Hesse">Hesse</option>
+                                    <option value="Lower Saxony">Lower Saxony</option>
+                                    <option value="Saxony">Saxony</option>
+                                </select>
+                            </div>
+
+                            <!-- Day of Week -->
+                            <div class="col-md-4">
+                                <label class="form-label">Day of Week</label>
+                                <select class="form-select" name="order_day_of_week">
+                                    <option value="Monday" selected>Monday</option>
+                                    <option value="Tuesday">Tuesday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                    <option value="Thursday">Thursday</option>
+                                    <option value="Friday">Friday</option>
+                                    <option value="Saturday">Saturday</option>
+                                    <option value="Sunday">Sunday</option>
+                                </select>
+                            </div>
+
+                            <!-- Behavioral Flags (Checkboxes) -->
+                            <div class="col-md-4">
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" name="is_bracketed" value="1" id="bracketCheck">
+                                    <label class="form-check-label text-light small" for="bracketCheck">
+                                        Multi-size Bracketing
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" name="is_unsized" value="1" id="unsizedCheck">
+                                    <label class="form-check-label text-light small" for="unsizedCheck">
+                                        Unsized / Accessory
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" name="is_delivery_missing" value="1" id="missingCheck">
+                                    <label class="form-check-label text-light small" for="missingCheck">
+                                        Delivery Undelivered / Missing
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-predict w-100">
+                                    <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Run Return Prediction
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Results Column -->
+            <div class="col-lg-4">
+                <div class="glass-card d-flex flex-column justify-content-between h-100">
+                    <div>
+                        <h5 class="fw-bold text-light mb-3">
+                            <i class="fa-solid fa-square-poll-vertical text-info me-2"></i>Inference Result
+                        </h5>
+
+                        {% if result %}
+                            <div class="result-box {% if result.is_return %}result-danger{% else %}result-success{% endif %} text-center my-3">
+                                <div class="display-6 fw-bold {% if result.is_return %}text-danger{% else %}text-success{% endif %} mb-1">
+                                    {{ result.probability }}%
+                                </div>
+                                <h5 class="fw-bold text-light mb-2">{{ result.prediction }}</h5>
+                                <p class="small text-muted mb-0">
+                                    {% if result.is_return %}
+                                        High probability of return. Recommend size guide confirmation, expedited delivery, or fit surveys.
+                                    {% else %}
+                                        Low return risk profile. Order patterns indicate standard retention probability.
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between text-light small mb-1">
+                                    <span>Model Confidence</span>
+                                    <span class="fw-bold">{{ result.probability }}%</span>
+                                </div>
+                                <div class="progress" style="height: 8px; background: rgba(255, 255, 255, 0.08);">
+                                    <div class="progress-bar {% if result.is_return %}bg-danger{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ result.probability }}%"></div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <div class="mb-3" style="font-size: 3rem; color: rgba(255, 255, 255, 0.1);">
+                                    <i class="fa-solid fa-calculator"></i>
+                                </div>
+                                <p class="text-muted small">
+                                    Fill in the order specifications on the left and click <strong>Run Return Prediction</strong> to evaluate probability.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="p-3 rounded-3 mt-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-subtle);">
+                        <small class=" d-block mb-1"><i class="fa-solid fa-circle-info text-primary me-1"></i> Active Model</small>
+                        <span class="text-light small fw-bold">Gradient Boosting Pipeline (.joblib)</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bootstrap Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

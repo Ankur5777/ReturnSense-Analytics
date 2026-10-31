@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReturnPulse AI | Prediction Audit Log</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .navbar-custom {
+            background: rgba(11, 15, 25, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .table-glass {
+            background-color: #131c2e;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .table-dark-custom {
+            --bs-table-bg: transparent;
+            --bs-table-color: #f1f5f9;
+            margin-bottom: 0;
+        }
+        .table-dark-custom th {
+            color: #ffffff;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 16px;
+        }
+        .table-dark-custom td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top py-3">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-light" href="{% url 'home' %}">
+                ReturnPulse<span class="text-info">.ai</span>
+            </a>
+            <div class="d-flex gap-2">
+                <a href="{% url 'predict' %}" class="btn btn-sm btn-primary">Run New Prediction</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-sm btn-outline-light">Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold text-light m-0">Inference History & Logs</h2>
+                <p class="text-secondary small m-0 mt-1">Real-time database audit trail of all executed predictions.</p>
+            </div>
+            <a href="/admin/prediction/orderprediction/" target="_blank" class="btn btn-sm btn-outline-warning">
+                <i class="fa-solid fa-lock me-1"></i> Open Django Admin
+            </a>
+        </div>
+
+        <div class="table-glass">
+            <div class="table-responsive">
+                <table class="table table-dark-custom">
+                    <thead>
+                        <tr>
+                            <th># ID</th>
+                            <th>Timestamp</th>
+                            <th>Price</th>
+                            <th>Transit Lag</th>
+                            <th>Customer Age</th>
+                            <th>Bracketed?</th>
+                            <th>Risk Score</th>
+                            <th>Prediction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in predictions %}
+                        <tr>
+                            <td class="fw-bold">#{{ item.id }}</td>
+                            <td>{{ item.created_at|date:"M d, Y H:i" }}</td>
+                            <td>€{{ item.price }}</td>
+                            <td>{{ item.delivery_duration }} days</td>
+                            <td>{{ item.customer_age|floatformat:0 }} yrs</td>
+                            <td>
+                                {% if item.is_bracketed %}
+                                    <span class="badge bg-warning text-dark">Yes</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">No</span>
+                                {% endif %}
+                            </td>
+                            <td><strong>{{ item.return_probability }}%</strong></td>
+                            <td>
+                                {% if item.is_high_risk %}
+                                    <span class="badge bg-danger">High Return Risk</span>
+                                {% else %}
+                                    <span class="badge bg-success">Likely to Keep</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                No predictions logged yet. Go to the <a href="{% url 'predict' %}">Prediction Page</a> to test one.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
